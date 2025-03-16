@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudVD - File Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --accent-color: #FBBC05;
+            --danger-color: #EA4335;
+            --light-bg: #f8f9fa;
+            --dark-text: #202124;
+            --light-text: #5f6368;
+            --border-color: #dadce0;
+            --hover-color: #e8f0fe;
+            --selection-color: #e6f3ff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+    
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: var(--light-text);
+            font-weight: normal;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1rem;
+            padding: 0 15px;
+        }
+    
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--dark-text);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            max-width: 100%;
+        }
+        
+        .breadcrumb::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .breadcrumb::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb i {
+            margin: 0 6px;
+            color: var(--light-text);
+            font-size: 0.8rem;
+        }
+    
+        /* File List Styles */
+        .file-list {
+            list-style-type: none;
+        }
+    
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+    
+        .file-item:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .file-item.selected {
+            background-color: var(--selection-color);
+        }
+        
+        .file-checkbox {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .file-name {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0; /* Important for text truncation */
+        }
+        
+        .file-name i {
+            margin-right: 10px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .file-name i.fa-folder {
+            color: var(--accent-color);
+        }
+        
+        .file-name a {
+            color: var(--dark-text);
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .file-name a:hover {
+            text-decoration: underline;
+            color: var(--primary-color);
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--light-text);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .action-btn i {
+            margin-right: 4px;
+        }
+        
+        .action-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--dark-text);
+        }
+        
+        .delete-btn {
+            color: var(--danger-color);
+        }
+        
+        .delete-btn:hover {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .move-btn {
+            color: var(--secondary-color);
+        }
+        
+        .move-btn:hover {
+            background-color: rgba(52, 168, 83, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .download-btn {
+            color: var(--primary-color);
+        }
+        
+        .download-btn:hover {
+            background-color: rgba(66, 133, 244, 0.1);
+            color: var(--primary-color);
+        }
+        
+        /* Bulk Actions Bar */
+        .bulk-actions-bar {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .bulk-actions-bar.active {
+            display: flex;
+        }
+        
+        .bulk-actions-count {
+            font-weight: 500;
+            color: var(--dark-text);
+        }
+        
+        .bulk-actions-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .selection-toggle {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            cursor: pointer;
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .selection-toggle:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .selection-toggle i {
+            margin-right: 5px;
+        }
+    
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .form-container {
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+    
+        .form-container input[type="text"],
+        .form-container select {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            width: 100%;
+        }
+        
+        .form-container input[type="file"] {
+            padding: 10px 0;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        
+        .form-container input[type="text"]:focus,
+        .form-container input[type="file"]:focus,
+        .form-container select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+    
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+    
+        .btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-folder {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-folder:hover {
+            background-color: #2d9247;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #d33426;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--light-text);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--border-color);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            animation: modalFadeIn 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+            padding: 5px;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background-color: #f1f3f4;
+            color: var(--dark-text);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e8eaed;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+            
+            .btn {
+                width: auto;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 30px;
+            }
+            
+            .card {
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .action-btn {
+                padding: 5px 10px;
+                font-size: 0.9rem;
+            }
+            
+            .action-btn i {
+                margin-right: 5px;
+            }
+            
+            .file-actions {
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header-content {
+                padding: 0 10px;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .logo i {
+                font-size: 1.6rem;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px 10px;
+            }
+            
+            .file-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .action-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .action-btn i {
+                margin-right: 6px;
+                font-size: 1rem;
+            }
+            
+            .modal-content {
+                padding: 15px;
+            }
+            
+            .modal-title {
+                font-size: 1.1rem;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-footer button {
+                width: 100%;
+            }
+            
+            .bulk-actions-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .bulk-actions-buttons {
+                justify-content: space-between;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .action-btn {
+                padding: 10px 15px;
+            }
+            
+            .file-item {
+                padding: 15px 10px;
+            }
+            
+            .file-name a {
+                padding: 5px 0;
+            }
+            
+            .file-checkbox {
+                width: 22px;
+                height: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cloud"></i>
+                <h1>CloudVD File Manager</h1>
+            </div>
+            <div class="selection-toggle" onclick="toggleSelectionMode()">
+                <i class="fas fa-check-square"></i> Select Items
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="subtitle">Securely manage your files in the cloud</h2>
+        
+        <!-- Bulk Actions Bar -->
+        <div id="bulkActionsBar" class="bulk-actions-bar">
+            <div class="bulk-actions-count">
+                <span id="selectedCount">0</span> items selected
+            </div>
+            <div class="bulk-actions-buttons">
+                <button class="btn" onclick="openBulkMoveModal()">
+                    <i class="fas fa-exchange-alt"></i> Move
+                </button>
+                <button class="btn download-btn" onclick="downloadSelected()">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button class="btn btn-danger" onclick="confirmDeleteSelected()">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+                <button class="btn btn-secondary" onclick="cancelSelection()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- File List -->
+        <div class="card">
+            <div class="breadcrumb">
+                <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+                {% if current_path %}
+                    {% set path_parts = current_path.split('/') %}
+                    {% set accumulated_path = '' %}
+                    {% for part in path_parts %}
+                        {% if part %}
+                            {% set accumulated_path = accumulated_path + part + '/' %}
+                            <i class="fas fa-chevron-right"></i>
+                            <a href="{{ url_for('browse_folder', folder_path=accumulated_path) }}">{{ part }}</a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <h3 class="section-title">
+                Files and Folders
+                {% if current_path %}
+                <a href="{{ url_for('index') }}" class="action-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+                {% endif %}
+            </h3>
+            
+            {% if files %}
+                <ul class="file-list" id="fileList">
+                    {% for file in files %}
+                        <li class="file-item" data-path="{{ file.path }}">
+                            <div class="file-name">
+                                <input type="checkbox" class="file-checkbox" style="display: none;" onchange="updateSelectedCount()">
+                                {% if file.is_dir %}
+                                    <i class="fas fa-folder"></i>
+                                    <a href="{{ url_for('browse_folder', folder_path=file.path) }}">{{ file.name }}</a>
+                                {% else %}
+                                    <i class="fas fa-file"></i>
+                                    <a href="{{ url_for('preview', filename=file.path) }}">{{ file.name }}</a>
+                                {% endif %}
+                            </div>
+                            <div class="file-actions">
+                                <a href="{{ url_for('download_file', filename=file.path) }}" class="action-btn download-btn">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <button onclick="openMoveModal('{{ file.path }}')" class="action-btn move-btn">
+                                    <i class="fas fa-exchange-alt"></i> Move
+                                </button>
+                                {% if current_path %}
+                                <form action="{{ url_for('move_to_main', filename=file.path) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn move-btn">
+                                        <i class="fas fa-home"></i> Move to Main
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <a href="{{ url_for('edit_name', filename=file.path) }}" class="action-btn">
+                                    <i class="fas fa-edit"></i> Rename
+                                </a>
+                                <form action="{{ url_for('delete_file', filename=file.path) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn delete-btn">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <p>No files found. Upload a file or create a folder to get started.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Forms Section -->
+        <div class="form-grid">
+            <!-- Create Folder Form -->
+            <div class="card form-container">
+                <h3 class="section-title">Create New Folder</h3>
+                <form action="{{ url_for('create_folder') }}" method="POST">
+                    <input type="text" name="folder_name" placeholder="Enter folder name" required>
+                    {% if current_path %}
+                    <input type="hidden" name="current_path" value="{{ current_path }}">
+                    {% endif %}
+                    <button type="submit" class="btn btn-folder">
+                        <i class="fas fa-folder-plus"></i> Create Folder
+                    </button>
+                </form>
+            </div>
+
+            <!-- Upload Files Form -->
+            <div class="card form-container">
+                <h3 class="section-title">Upload Files</h3>
+                <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" multiple>
+                    {% if current_path %}
+                    <input type="hidden" name="current_path" value="{{ current_path }}">
+                    {% endif %}
+                    <button type="submit" class="btn">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Move File Modal -->
+    <div id="moveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Move Item</h3>
+                <button class="modal-close" onclick="closeMoveModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="moveForm" action="{{ url_for('move_file') }}" method="POST">
+                    <input type="hidden" id="fileToMove" name="filename">
+                    <div class="form-container">
+                        <label for="destination">Select Destination:</label>
+                        <select name="destination" id="destination" required>
+                            <option value="">-- Select Destination --</option>
+                            <option value="/">Main Directory</option>
+                            {% for folder in all_folders %}
+                                <option value="{{ folder.path }}">{{ folder.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeMoveModal()">Cancel</button>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-exchange-alt"></i> Move
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bulk Move Modal -->
+    <div id="bulkMoveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Move Selected Items</h3>
+                <button class="modal-close" onclick="closeBulkMoveModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkMoveForm" action="{{ url_for('bulk_move') }}" method="POST">
+                    <input type="hidden" id="filesToMove" name="filenames">
+                    <div class="form-container">
+                        <label for="bulkDestination">Select Destination:</label>
+                        <select name="destination" id="bulkDestination" required>
+                            <option value="">-- Select Destination --</option>
+                            <option value="/">Main Directory</option>
+                            {% for folder in all_folders %}
+                                <option value="{{ folder.path }}">{{ folder.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeBulkMoveModal()">Cancel</button>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-exchange-alt"></i> Move Items
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Deletion</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the selected items? This action cannot be undone.</p>
+                <form id="bulkDeleteForm" action="{{ url_for('bulk_delete') }}" method="POST">
+                    <input type="hidden" id="filesToDelete" name="filenames">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt"></i> Delete Items
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: var(--light-text); margin-top: 20px; font-size: 0.9rem;">
+        <p>© 2023 CloudVD File Manager. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Selection mode variables
+        let selectionMode = false;
+        const fileList = document.getElementById('fileList');
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        
+        // Toggle selection mode
+        function toggleSelectionMode() {
+            selectionMode = !selectionMode;
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+            
+            if (selectionMode) {
+                // Enable selection mode
+                checkboxes.forEach(checkbox => {
+                    checkbox.style.display = 'block';
+                });
+                document.querySelector('.selection-toggle').innerHTML = '<i class="fas fa-times"></i> Cancel Selection';
+            } else {
+                // Disable selection mode
+                checkboxes.forEach(checkbox => {
+                    checkbox.style.display = 'none';
+                    checkbox.checked = false;
+                });
+                document.querySelector('.selection-toggle').innerHTML = '<i class="fas fa-check-square"></i> Select Items';
+                bulkActionsBar.classList.remove('active');
+                
+                // Remove selected class from all items
+                document.querySelectorAll('.file-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+            }
+            
+            updateSelectedCount();
+        }
+        
+        // Update selected count
+        function updateSelectedCount() {
+            const selectedItems = document.querySelectorAll('.file-checkbox:checked');
+            const count = selectedItems.length;
+            
+            document.getElementById('selectedCount').textContent = count;
+            
+            if (count > 0) {
+                bulkActionsBar.classList.add('active');
+            } else {
+                bulkActionsBar.classList.remove('active');
+            }
+            
+            // Update selected class for items
+            document.querySelectorAll('.file-item').forEach(item => {
+                const checkbox = item.querySelector('.file-checkbox');
+                if (checkbox.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Cancel selection
+        function cancelSelection() {
+            toggleSelectionMode();
+        }
+        
+        // Get selected file paths
+        function getSelectedFilePaths() {
+            const selectedItems = document.querySelectorAll('.file-checkbox:checked');
+            return Array.from(selectedItems).map(checkbox => 
+                checkbox.closest('.file-item').dataset.path
+            );
+        }
+        
+        // Download selected files
+        function downloadSelected() {
+    const selectedPaths = getSelectedFilePaths();
+    if (selectedPaths.length === 0) return;
+    
+    // Create a form to submit the download request
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('bulk_download') }}";  // This should match the route in app.py
+    
+    // Add the selected files as a hidden input
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'filenames';
+    input.value = JSON.stringify(selectedPaths);
+    form.appendChild(input);
+    
+    // Add the form to the document and submit it
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+        
+        // Open bulk move modal
+        function openBulkMoveModal() {
+            const selectedPaths = getSelectedFilePaths();
+            if (selectedPaths.length === 0) return;
+            
+            document.getElementById('filesToMove').value = JSON.stringify(selectedPaths);
+            document.getElementById('bulkMoveModal').style.display = 'flex';
+        }
+        
+        // Close bulk move modal
+        function closeBulkMoveModal() {
+            document.getElementById('bulkMoveModal').style.display = 'none';
+        }
+        
+        // Confirm delete selected
+        function confirmDeleteSelected() {
+            const selectedPaths = getSelectedFilePaths();
+            if (selectedPaths.length === 0) return;
+            
+            document.getElementById('filesToDelete').value = JSON.stringify(selectedPaths);
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+        
+        // Close delete modal
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+        
+        // Individual file operations
+        function openMoveModal(filename) {
+            document.getElementById('fileToMove').value = filename;
+            document.getElementById('moveModal').style.display = 'flex';
+        }
+        
+        function closeMoveModal() {
+            document.getElementById('moveModal').style.display = 'none';
+        }
+        
+        // Close modals when clicking outside of them
+        window.onclick = function(event) {
+            const moveModal = document.getElementById('moveModal');
+            const bulkMoveModal = document.getElementById('bulkMoveModal');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            if (event.target === moveModal) {
+                closeMoveModal();
+            } else if (event.target === bulkMoveModal) {
+                closeBulkMoveModal();
+            } else if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        }
+        
+        // Add touch-friendly behavior for mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make file items more touch-friendly
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach(item => {
+                // Ensure adequate touch target size
+                const fileNameLink = item.querySelector('.file-name a');
+                if (fileNameLink) {
+                    fileNameLink.style.minHeight = '44px';
+                    fileNameLink.style.display = 'flex';
+                    fileNameLink.style.alignItems = 'center';
+                }
+                
+                // Add click handler for selection mode
+                item.addEventListener('click', function(e) {
+                    if (selectionMode && !e.target.closest('a') && !e.target.closest('button') && !e.target.closest('input')) {
+                        const checkbox = item.querySelector('.file-checkbox');
+                        checkbox.checked = !checkbox.checked;
+                        updateSelectedCount();
+                    }
+                });
+            });
+            
+            // Improve scrolling on mobile for breadcrumbs
+            const breadcrumb = document.querySelector('.breadcrumb');
+            if (breadcrumb && breadcrumb.scrollWidth > breadcrumb.clientWidth) {
+                breadcrumb.scrollLeft = breadcrumb.scrollWidth;
+            }
+        });
+    </script>
+</body>
+</html>
+
+

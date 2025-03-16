@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Preview - CloudVD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --accent-color: #FBBC05;
+            --danger-color: #EA4335;
+            --light-bg: #f8f9fa;
+            --dark-text: #202124;
+            --light-text: #5f6368;
+            --border-color: #dadce0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 1.8rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        
+        .preview-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .file-title {
+            font-size: 1.5rem;
+            color: var(--dark-text);
+            word-break: break-word;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: #f1f3f4;
+            color: var(--dark-text);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e8eaed;
+        }
+        
+        .preview-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            overflow: auto;
+        }
+        
+        /* Image Preview */
+        .image-preview img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        
+        /* Video Preview */
+        .video-preview video {
+            max-width: 100%;
+            max-height: 80vh;
+        }
+        
+        /* Audio Preview */
+        .audio-preview audio {
+            width: 100%;
+        }
+        
+        /* PDF Preview */
+        .pdf-preview {
+            width: 100%;
+            height: 80vh;
+        }
+        
+        .pdf-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Text Preview */
+        .text-preview {
+            width: 100%;
+            max-height: 80vh;
+            overflow: auto;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Unknown File Type */
+        .unknown-preview {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .unknown-preview i {
+            font-size: 5rem;
+            color: var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .unknown-preview p {
+            color: var(--light-text);
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .preview-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .preview-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .btn {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cloud"></i>
+                <h1>CloudVD File Preview</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="preview-card">
+            <div class="preview-header">
+                <h2 class="file-title">{{ filename.split('/')[-1] }}</h2>
+                <div class="preview-actions">
+                    <a href="{{ url_for('download_file', filename=filename) }}" class="btn">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="preview-content">
+                {% if file_type == 'image' %}
+                    <div class="image-preview">
+                        <img src="{{ url_for('serve_file', filename=filename) }}" alt="{{ filename }}">
+                    </div>
+                {% elif file_type == 'video' %}
+                    <div class="video-preview">
+                        <video controls>
+                            <source src="{{ url_for('serve_file', filename=filename) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                {% elif file_type == 'audio' %}
+                    <div class="audio-preview">
+                        <audio controls>
+                            <source src="{{ url_for('serve_file', filename=filename) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                {% elif file_type == 'pdf' %}
+                    <div class="pdf-preview">
+                        <iframe src="{{ url_for('serve_file', filename=filename) }}"></iframe>
+                    </div>
+                {% elif file_type == 'text' %}
+                    <div class="text-preview" id="textContent">
+                        Loading content...
+                    </div>
+                {% else %}
+                    <div class="unknown-preview">
+                        <i class="fas fa-file"></i>
+                        <p>This file type cannot be previewed.</p>
+                        <a href="{{ url_for('download_file', filename=filename) }}" class="btn">
+                            <i class="fas fa-download"></i> Download File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if file_type == 'text' %}
+    <script>
+        // Fetch and display text content
+        fetch('{{ url_for("serve_file", filename=filename) }}')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('textContent').textContent = data;
+            })
+            .catch(error => {
+                document.getElementById('textContent').textContent = 'Error loading file content: ' + error;
+            });
+    </script>
+    {% endif %}
+</body>
+</html>
